@@ -29,9 +29,9 @@ public class ImService {
 	@ServiceReference
 	OrderService service;
 
-	public String sayHi(String string) throws Exception {
+	public String sayHi(String name) throws Exception {
 		OrderRequest orderRequest = new OrderRequest();
-		orderRequest.setUid(string);
+		orderRequest.setUid(name);
 		OrderResponse res = service.findOldOrder(orderRequest);
 		return res.getOid();
 	}
