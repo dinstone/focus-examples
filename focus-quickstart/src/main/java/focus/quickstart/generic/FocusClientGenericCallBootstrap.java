@@ -21,7 +21,7 @@ public class FocusClientGenericCallBootstrap {
 			CompletableFuture<String> replyFuture = genericService.async(String.class, "hello", "dinstone");
 			System.out.println("async call reply : " + replyFuture.get());
 		} finally {
-			client.destroy();
+			client.close();
 		}
 	}
 }

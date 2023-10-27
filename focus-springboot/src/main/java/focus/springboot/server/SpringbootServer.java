@@ -29,7 +29,7 @@ import com.dinstone.focus.server.starter.EnableFocusServer;
 @Configurable
 @EnableFocusServer
 @SpringBootApplication
-@ComponentScan(basePackages = "focus.springboot.service")
+@ComponentScan(basePackages = "focus.springboot.spi")
 public class SpringbootServer {
 
 	public static void main(String[] args) throws Exception {

@@ -19,7 +19,7 @@ public class FocusClientAsyncCallBootstrap {
 			CompletableFuture<String> replyFuture = fooService.hello("dinstone");
 			System.out.println(replyFuture.get());
 		} finally {
-			client.destroy();
+			client.close();
 		}
 	}
 

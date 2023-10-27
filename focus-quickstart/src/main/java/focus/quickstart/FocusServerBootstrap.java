@@ -28,7 +28,7 @@ public class FocusServerBootstrap {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		server.stop();
+		server.close();
 		LOG.info("server stop");
 	}
 }

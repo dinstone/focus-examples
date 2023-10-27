@@ -26,12 +26,12 @@ import org.springframework.context.annotation.ComponentScan;
 import com.dinstone.focus.client.ClientOptions;
 import com.dinstone.focus.client.starter.EnableFocusClient;
 
-import focus.springboot.service.ImService;
+import focus.springboot.spi.ImService;
 
 @Configurable
 @SpringBootApplication
 @EnableFocusClient("focus.springboot.api")
-@ComponentScan(basePackages = "focus.springboot.service")
+@ComponentScan(basePackages = "focus.springboot.spi")
 public class SpringbootClient {
 
 	public static void main(String[] args) throws Exception {
