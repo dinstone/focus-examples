@@ -12,5 +12,6 @@
     <modules>
         <module>focus-quickstart</module>
         <module>focus-springboot</module>
+        <module>focus-example</module>
     </modules>
 </project>
