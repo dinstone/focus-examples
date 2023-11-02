@@ -35,17 +35,7 @@
             <version>${focus.version}</version>
             <type>pom</type>
         </dependency>
-        <dependency>
-            <groupId>com.dinstone.focus</groupId>
-            <artifactId>focus-clutch-zookeeper</artifactId>
-            <version>${focus.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+
         <dependency>
             <groupId>com.dinstone.focus</groupId>
             <artifactId>focus-telemetry</artifactId>
