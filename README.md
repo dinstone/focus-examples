@@ -1,1 +1,1 @@
-1. git push -u origin  master:main
+git push -u origin  master:main
