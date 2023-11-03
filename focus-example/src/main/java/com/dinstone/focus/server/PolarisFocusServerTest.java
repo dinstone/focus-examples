@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import com.dinstone.focus.example.DemoService;
 import com.dinstone.focus.example.DemoServiceImpl;
-import com.dinstone.focus.invoke.Interceptor;
 import com.dinstone.focus.server.polaris.PolarisResolverOptions;
 import com.dinstone.focus.server.polaris.RateLimitInterceptor;
 import com.dinstone.focus.transport.photon.PhotonAcceptOptions;
@@ -27,29 +26,29 @@ import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
 
 public class PolarisFocusServerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(FocusServerTest.class);
+	private static final Logger LOG = LoggerFactory.getLogger(FocusServerTest.class);
 
-    public static void main(String[] args) {
-        // setting registry config
-        final String pa = "119.91.66.223:8091";// "192.168.1.120:8091";
-        Interceptor rateLimt = new RateLimitInterceptor(pa);
-        ServerOptions serverOptions = new ServerOptions("com.rpc.demo.server");
-        serverOptions.setResolverOptions(new PolarisResolverOptions().addAddresses(pa));
-        serverOptions.listen("-", 3333).setAcceptOptions(new PhotonAcceptOptions());
-        serverOptions.addInterceptor(rateLimt);
+	public static void main(String[] args) {
+//        final String pa = "119.91.66.223:8091";// "192.168.1.120:8091";
+		RateLimitInterceptor rateLimt = new RateLimitInterceptor();
+		ServerOptions serverOptions = new ServerOptions("com.rpc.demo.server");
+		serverOptions.setResolverOptions(new PolarisResolverOptions());
+		serverOptions.listen("-", 3333).setAcceptOptions(new PhotonAcceptOptions());
+		serverOptions.addInterceptor(rateLimt);
 
-        FocusServer server = new FocusServer(serverOptions);
-        server.exporting(DemoService.class, new DemoServiceImpl());
-        server.start();
-        LOG.info("server start");
-        try {
-            System.in.read();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+		FocusServer server = new FocusServer(serverOptions);
+		server.exporting(DemoService.class, new DemoServiceImpl());
+		server.start();
+		LOG.info("server start");
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-        server.close();
-        LOG.info("server stop");
-    }
+		server.close();
+		rateLimt.close();
+		LOG.info("server stop");
+	}
 
 }

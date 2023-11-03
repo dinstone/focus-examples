@@ -29,10 +29,11 @@ public class PolarisFocusClientTest {
 
         LOG.info("init start");
 
-        final String pa = "119.91.66.223:8091";// "192.168.1.120:8091";
-        PolarisLocaterOptions locaterOptions = new PolarisLocaterOptions().addAddresses(pa);
-        ClientOptions option = new ClientOptions("com.rpc.demo.client").setLocaterOptions(locaterOptions)
-                .addInterceptor(new CircuitBreakInterceptor(pa));
+//        final String pa = "119.91.66.223:8091";// "192.168.1.120:8091";
+        PolarisLocaterOptions locaterOptions = new PolarisLocaterOptions();
+        final CircuitBreakInterceptor interceptor = new CircuitBreakInterceptor();
+		ClientOptions option = new ClientOptions("com.rpc.demo.client").setLocaterOptions(locaterOptions)
+                .addInterceptor(interceptor);
 
         FocusClient client = new FocusClient(option);
         DemoService ds = client.importing(DemoService.class, "com.rpc.demo.server");
@@ -40,8 +41,6 @@ public class PolarisFocusClientTest {
         LOG.info("int end");
 
         try {
-            Thread.sleep(1000);
-
             ds.hello(null);
         } catch (Exception e) {
             e.printStackTrace();
@@ -60,6 +59,7 @@ public class PolarisFocusClientTest {
             e.printStackTrace();
         }
         client.close();
+        interceptor.close();
     }
 
     private static void execute(DemoService ds, String tag) {

@@ -20,7 +20,9 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import com.dinstone.focus.example.AuthenService;
+import com.dinstone.focus.invoke.Interceptor.Kind;
 import com.dinstone.focus.serialze.protostuff.ProtostuffSerializer;
+import com.dinstone.focus.telemetry.TelemetryInterceptor;
 import com.dinstone.focus.transport.photon.PhotonAcceptOptions;
 
 import io.netty.handler.ssl.util.SelfSignedCertificate;
@@ -35,51 +37,54 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 
 public class SslFocusServerTest {
 
-    public static void main(String[] args) throws CertificateException {
+	public static void main(String[] args) throws CertificateException {
 
-        String appName = "focus.ssl.server";
-        ServerOptions serverOptions = new ServerOptions(appName);
-        serverOptions.listen("localhost", 3333);
+		String appName = "focus.ssl.server";
+		ServerOptions serverOptions = new ServerOptions(appName);
+		serverOptions.listen("localhost", 3333);
 
-        // setting ssl
-        PhotonAcceptOptions acceptOptions = new PhotonAcceptOptions();
-        acceptOptions.setEnableSsl(true);
-        acceptOptions.setIdleTimeout(100000000);
-        SelfSignedCertificate cert = new SelfSignedCertificate();
-        acceptOptions.setPrivateKey(cert.key());
-        acceptOptions.setCertChain(new X509Certificate[] { cert.cert() });
-        // setting accept options
-        serverOptions.setAcceptOptions(acceptOptions);
-        // setting global default serilizer
-        serverOptions.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE);
+		// setting ssl
+		SelfSignedCertificate cert = new SelfSignedCertificate();
+		PhotonAcceptOptions acceptOptions = new PhotonAcceptOptions();
+		acceptOptions.setEnableSsl(true);
+		acceptOptions.setPrivateKey(cert.key());
+		acceptOptions.setCertChain(new X509Certificate[] { cert.cert() });
+		// setting accept options
+		serverOptions.setAcceptOptions(acceptOptions);
+		// setting global default serilizer
+		serverOptions.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE);
 
-        FocusServer server = new FocusServer(serverOptions);
+		// setting interceptor
+		OpenTelemetry t = getTelemetry(appName);
+		serverOptions.addInterceptor(new TelemetryInterceptor(t, Kind.SERVER));
 
-        // export alias service
-        server.exporting(AuthenService.class, new AuthenService(), "AuthenService");
+		FocusServer server = new FocusServer(serverOptions);
 
-        server.start();
-        try {
-            System.in.read();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+		// export alias service
+		server.exporting(AuthenService.class, new AuthenService(), "AuthenService");
 
-        server.close();
-    }
+		server.start();
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-    private static OpenTelemetry getTelemetry(String serviceName) {
-        Resource resource = Resource.getDefault()
-                .merge(Resource.create(Attributes.of(AttributeKey.stringKey("service.name"), serviceName)));
+		server.close();
+	}
 
-        SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-                // .addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().build()).build())
-                .setResource(resource).build();
+	private static OpenTelemetry getTelemetry(String serviceName) {
+		Resource resource = Resource.getDefault()
+				.merge(Resource.create(Attributes.of(AttributeKey.stringKey("service.name"), serviceName)));
 
-        OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider)
-                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-                .buildAndRegisterGlobal();
-        return openTelemetry;
-    }
+		SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+				// .addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().build()).build())
+				.setResource(resource).build();
+
+		OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider)
+				.setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+				.buildAndRegisterGlobal();
+		return openTelemetry;
+	}
 
 }
