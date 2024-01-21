@@ -78,7 +78,7 @@ public class CompressTest {
         byte[] uncompressBytes = compress.decode(resultBytes);
         System.out.println("decode after  " + uncompressBytes.length);
         String result = new String(uncompressBytes);
-        System.out.println(compress.compressorType() + " : " + result.equals(data));
+        System.out.println(compress.type() + " : " + result.equals(data));
         System.out.println("===============================");
     }
 

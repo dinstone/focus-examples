@@ -7,7 +7,7 @@
     </parent>
     <artifactId>focus-springboot</artifactId>
     <properties>
-        <focus.version>1.1.0</focus.version>
+        <focus.version>1.2.0</focus.version>
     </properties>
     <dependencies>
         <dependency>
