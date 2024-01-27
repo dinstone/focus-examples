@@ -15,7 +15,7 @@
  */
 package com.dinstone.focus.client;
 
-import com.dinstone.focus.client.consul.ConsulLocaterOptions;
+import com.dinstone.focus.client.consul.ConsulLocatorOptions;
 import com.dinstone.focus.example.DemoService;
 import com.dinstone.focus.transport.photon.PhotonConnectOptions;
 import com.dinstone.loghub.Logger;
@@ -31,9 +31,9 @@ public class ConsulFocusClientTest {
 
 		ClientOptions clientOptions = new ClientOptions("com.rpc.demo.client");
 		PhotonConnectOptions connectOptions = new PhotonConnectOptions().setConnectPoolSize(1);
-		ConsulLocaterOptions locaterOptions = new ConsulLocaterOptions().setAgentHost("192.168.1.120")
+		ConsulLocatorOptions locaterOptions = new ConsulLocatorOptions().setAgentHost("192.168.1.120")
 				.setAgentPort(8500);
-		clientOptions.setConnectOptions(connectOptions).setLocaterOptions(locaterOptions);
+		clientOptions.setConnectOptions(connectOptions).setLocatorOptions(locaterOptions);
 
 		FocusClient client = new FocusClient(clientOptions);
 		DemoService ds = client.importing(DemoService.class, "com.rpc.demo.server");

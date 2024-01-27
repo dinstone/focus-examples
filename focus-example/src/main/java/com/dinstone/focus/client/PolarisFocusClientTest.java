@@ -16,7 +16,7 @@
 package com.dinstone.focus.client;
 
 import com.dinstone.focus.client.polaris.CircuitBreakInterceptor;
-import com.dinstone.focus.client.polaris.PolarisLocaterOptions;
+import com.dinstone.focus.client.polaris.PolarisLocatorOptions;
 import com.dinstone.focus.example.DemoService;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
@@ -30,9 +30,9 @@ public class PolarisFocusClientTest {
         LOG.info("init start");
 
 //        final String pa = "119.91.66.223:8091";// "192.168.1.120:8091";
-        PolarisLocaterOptions locaterOptions = new PolarisLocaterOptions();
+        PolarisLocatorOptions locaterOptions = new PolarisLocatorOptions();
         final CircuitBreakInterceptor interceptor = new CircuitBreakInterceptor();
-		ClientOptions option = new ClientOptions("com.rpc.demo.client").setLocaterOptions(locaterOptions)
+		ClientOptions option = new ClientOptions("com.rpc.demo.client").setLocatorOptions(locaterOptions)
                 .addInterceptor(interceptor);
 
         FocusClient client = new FocusClient(option);
