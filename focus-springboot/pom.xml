@@ -6,9 +6,6 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>focus-springboot</artifactId>
-    <properties>
-        <focus.version>1.2.0</focus.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>com.dinstone.focus</groupId>
@@ -24,6 +21,18 @@
             <groupId>com.dinstone.focus</groupId>
             <artifactId>focus-serialize-json</artifactId>
             <version>${focus.version}</version>
+        </dependency>
+
+        <!-- Log4j 2.x Implement -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j2.version}</version>
         </dependency>
     </dependencies>
 </project>

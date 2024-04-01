@@ -6,34 +6,27 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>focus-example</artifactId>
-    <properties>
-        <log4j2.version>2.18.0</log4j2.version>
-        <focus.version>1.2.0</focus.version>
-    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.dinstone.focus</groupId>
-            <artifactId>focus-client-photon</artifactId>
+            <artifactId>focus-transport-photon</artifactId>
             <version>${focus.version}</version>
-            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>com.dinstone.focus</groupId>
-            <artifactId>focus-client-http2</artifactId>
+            <artifactId>focus-transport-http2</artifactId>
             <version>${focus.version}</version>
-            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>com.dinstone.focus</groupId>
-            <artifactId>focus-server-photon</artifactId>
+            <artifactId>focus-client-core</artifactId>
             <version>${focus.version}</version>
-            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>com.dinstone.focus</groupId>
-            <artifactId>focus-server-http2</artifactId>
+            <artifactId>focus-server-core</artifactId>
             <version>${focus.version}</version>
-            <type>pom</type>
         </dependency>
 
         <dependency>
@@ -62,6 +55,16 @@
             <version>1.33.0</version>
         </dependency>
         <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-prometheus</artifactId>
+            <version>1.33.0-alpha</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.contrib</groupId>
+            <artifactId>opentelemetry-prometheus-client-bridge</artifactId>
+            <version>1.32.0-alpha</version>
+        </dependency>
+        <dependency>
             <groupId>com.dinstone.focus</groupId>
             <artifactId>focus-client-consul</artifactId>
             <version>${focus.version}</version>
@@ -72,11 +75,6 @@
             <version>${focus.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.dinstone.loghub</groupId>
-            <artifactId>loghub-slf4j</artifactId>
-            <version>1.3.1</version>
-        </dependency>
         <!-- Log4j 2.x Implement -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -88,29 +86,11 @@
             <artifactId>log4j-core</artifactId>
             <version>${log4j2.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>com.dinstone.focus</groupId>
             <artifactId>focus-client-starter</artifactId>
             <version>${focus.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-to-slf4j</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.dinstone.focus</groupId>
