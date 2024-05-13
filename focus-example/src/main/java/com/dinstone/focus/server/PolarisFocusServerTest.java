@@ -26,29 +26,36 @@ import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
 
 public class PolarisFocusServerTest {
-	private static final Logger LOG = LoggerFactory.getLogger(FocusServerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FocusServerTest.class);
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
+        int port = 3333;
+        String portV = System.getProperty("port");
+        if (portV != null) {
+            port = Integer.parseInt(portV);
+        }
+
 //        final String pa = "119.91.66.223:8091";// "192.168.1.120:8091";
-		RateLimitInterceptor rateLimt = new RateLimitInterceptor();
-		ServerOptions serverOptions = new ServerOptions("com.rpc.demo.server");
-		serverOptions.setResolverOptions(new PolarisResolverOptions());
-		serverOptions.listen("-", 3333).setAcceptOptions(new PhotonAcceptOptions());
-		serverOptions.addInterceptor(rateLimt);
+        RateLimitInterceptor rateLimt = new RateLimitInterceptor();
+        ServerOptions serverOptions = new ServerOptions("focus.demo.server");
+        serverOptions.setResolverOptions(new PolarisResolverOptions());
 
-		FocusServer server = new FocusServer(serverOptions);
-		server.exporting(DemoService.class, new DemoServiceImpl());
-		server.start();
-		LOG.info("server start");
-		try {
-			System.in.read();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        serverOptions.listen("-", port).setAcceptOptions(new PhotonAcceptOptions());
+        serverOptions.addInterceptor(rateLimt);
 
-		server.close();
-		rateLimt.close();
-		LOG.info("server stop");
-	}
+        FocusServer server = new FocusServer(serverOptions);
+        server.exporting(DemoService.class, new DemoServiceImpl());
+        server.start();
+        LOG.info("server start");
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        server.close();
+        rateLimt.close();
+        LOG.info("server stop");
+    }
 
 }

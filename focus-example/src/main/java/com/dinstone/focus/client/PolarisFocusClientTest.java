@@ -18,6 +18,7 @@ package com.dinstone.focus.client;
 import com.dinstone.focus.client.polaris.CircuitBreakInterceptor;
 import com.dinstone.focus.client.polaris.PolarisLocatorOptions;
 import com.dinstone.focus.example.DemoService;
+import com.dinstone.focus.transport.photon.PhotonConnectOptions;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
 
@@ -30,20 +31,27 @@ public class PolarisFocusClientTest {
         LOG.info("init start");
 
 //        final String pa = "119.91.66.223:8091";// "192.168.1.120:8091";
-        PolarisLocatorOptions locaterOptions = new PolarisLocatorOptions();
+        ClientOptions option = new ClientOptions("focus.demo.client");
+
+        PolarisLocatorOptions locatorOptions = new PolarisLocatorOptions();
+        option.setLocatorOptions(locatorOptions);
+
+        option.setConnectOptions(new PhotonConnectOptions().setConnectPoolSize(1));
+
         final CircuitBreakInterceptor interceptor = new CircuitBreakInterceptor();
-		ClientOptions option = new ClientOptions("com.rpc.demo.client").setLocatorOptions(locaterOptions)
-                .addInterceptor(interceptor);
+        //option.addInterceptor(interceptor);
+
+        option.setConnectRetry(2).setTimeoutRetry(2);
 
         FocusClient client = new FocusClient(option);
-        DemoService ds = client.importing(DemoService.class, "com.rpc.demo.server");
+        DemoService ds = client.importing(DemoService.class, "focus.demo.server");
 
         LOG.info("int end");
 
         try {
             ds.hello(null);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("null param error", e);
         }
 
         try {
@@ -54,7 +62,7 @@ public class PolarisFocusClientTest {
         }
 
         try {
-            Thread.sleep(20000);
+            Thread.sleep(100000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -65,9 +73,13 @@ public class PolarisFocusClientTest {
     private static void execute(DemoService ds, String tag) {
         int c = 0;
         long st = System.currentTimeMillis();
-        int loopCount = 200000;
+        int loopCount = 50000;
         while (c < loopCount) {
-            ds.hello("dinstoneo");
+            try {
+                ds.hello("dinstoneo");
+            } catch (Exception e) {
+                LOG.error("{} error: {}", c, e.getMessage());
+            }
             c++;
         }
         long et = System.currentTimeMillis() - st;

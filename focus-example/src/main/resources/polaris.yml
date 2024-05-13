@@ -1,0 +1,34 @@
+global:
+  serverConnector:
+    #Descirption: id of server connector.
+    id: polaris
+    #描述：默认服务端埋点接入地址
+    addresses:
+      - 119.91.66.223:8091
+    #描述: 访问server的连接协议，SDK会根据协议名称会加载对应的插件
+    protocol: grpc
+    #描述: 发起连接后的连接超时时间
+    connectTimeout: 100ms
+    #描述: 与服务端发起远程请求超时时间
+    messageTimeout: 3s
+    #描述: 连接空闲时间（以最后一次消息交互时间来算），长连接模式下，当连接空闲超过一定时间后，SDK会主动释放连接
+    connectionIdleTimeout: 60s
+    #描述: server节点的切换周期，为了使得server的压力能够均衡，SDK会定期切换目标服务端节点
+    serverSwitchInterval: 10m
+    #描述：重连间隔时间
+    reconnectInterval: 500ms
+  statReporter:
+    #描述: 是否启用上报
+    enable: true
+    plugin:
+      prometheus:
+        type: push
+        #描述: 设置 pushgateway 的地址, 仅 type == push 时生效
+        #类型:string
+        address: 119.91.66.223:9091
+        #描述:设置metric数据推送到pushgateway的执行周期, 仅 type == push 时生效
+        #类型:string
+        #格式:^\d+(s|m|h)$
+        #范围:[1s:...]
+        #默认值:10s
+        pushInterval: 5s

@@ -91,13 +91,13 @@ public class FocusClientTest {
 
 			OrderService oc = client.importing(OrderService.class, new ImportOptions(OrderService.class.getName())
 					.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE));
-			executeOrderService(oc, "OrderService sync hot: ");
-			executeOrderService(oc, "OrderService sync exe: ");
+			executeOrderService(oc, "OrderService sync hot [Protobuf]: ");
+			executeOrderService(oc, "OrderService sync exe [Protobuf]: ");
 //
 			oc = client.importing(OrderService.class,
 					new ImportOptions("OrderService").setSerializerType(JacksonSerializer.SERIALIZER_TYPE));
-			executeOrderService(oc, "OrderService sync hot: ");
-			executeOrderService(oc, "OrderService sync exe: ");
+			executeOrderService(oc, "OrderService sync hot [Json]: ");
+			executeOrderService(oc, "OrderService sync exe [Json]: ");
 		} finally {
 			client.close();
 		}
