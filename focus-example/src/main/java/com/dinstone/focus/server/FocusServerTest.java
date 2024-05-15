@@ -34,7 +34,6 @@ import com.dinstone.focus.serialze.protostuff.ProtostuffSerializer;
 import com.dinstone.focus.telemetry.TelemetryInterceptor;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -50,69 +49,71 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 public class FocusServerTest {
 
-	private static final Logger LOG = LoggerFactory.getLogger(FocusServerTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FocusServerTest.class);
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 
-		String appName = "focus.example.server";
-		OpenTelemetry openTelemetry = getTelemetry(appName);
-		Interceptor tf = new TelemetryInterceptor(openTelemetry, Interceptor.Kind.SERVER);
+        String appName = "focus.example.server";
+        OpenTelemetry openTelemetry = getTelemetry(appName);
+        Interceptor tf = new TelemetryInterceptor(openTelemetry, Interceptor.Kind.SERVER);
 
-		ServerOptions serverOptions = new ServerOptions(appName).listen("localhost", 3333);//.addInterceptor(tf);
-		// serverOptions.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE);
+        ServerOptions serverOptions = new ServerOptions(appName).listen("localhost", 3333);
+        serverOptions.addInterceptor(tf);
+        // serverOptions.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE);
 
-		FocusServer server = new FocusServer(serverOptions);
+        FocusServer server = new FocusServer(serverOptions);
 
-		server.exporting(UserService.class, new UserServiceServerImpl());
-		server.exporting(DemoService.class, new DemoServiceImpl());
+        server.exporting(UserService.class, new UserServiceServerImpl());
+        server.exporting(DemoService.class, new DemoServiceImpl());
 
-		// stuff
-		server.exporting(OrderService.class, new OrderServiceImpl(null, null),
-				new ExportOptions(OrderService.class.getName())
-						.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE));
-		// json
-		server.exporting(OrderService.class, new OrderServiceImpl(null, null),
-				new ExportOptions("OrderService").setSerializerType(JacksonSerializer.SERIALIZER_TYPE));
+        // stuff
+        server.exporting(OrderService.class, new OrderServiceImpl(null, null),
+                new ExportOptions(OrderService.class.getName())
+                        .setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE));
+        // json
+        server.exporting(OrderService.class, new OrderServiceImpl(null, null),
+                new ExportOptions("OrderService").setSerializerType(JacksonSerializer.SERIALIZER_TYPE));
 
-		// export alias service
-		server.exporting(AuthenService.class, new AuthenService(), "AuthenService");
-		server.exporting(ArithService.class, new ArithServiceImpl(),
-				new ExportOptions("ArithService").setSerializerType(ProtobufSerializer.SERIALIZER_TYPE));
+        // export alias service
+        server.exporting(AuthenService.class, new AuthenService(), "AuthenService");
+        server.exporting(ArithService.class, new ArithServiceImpl(),
+                new ExportOptions("ArithService").setSerializerType(ProtobufSerializer.SERIALIZER_TYPE));
 
-		server.start();
-		LOG.info("server start");
-		try {
-			System.in.read();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		server.close();
-		LOG.info("server stop");
-	}
+        server.start();
+        LOG.info("server start");
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        server.close();
+        LOG.info("server stop");
+    }
 
-	private static OpenTelemetry getTelemetry(String serviceName) {
-		Resource resource = Resource.getDefault()
-				.merge(Resource.create(Attributes.of(AttributeKey.stringKey("service.name"), serviceName)));
+    private static OpenTelemetry getTelemetry(String serviceName) {
+        Resource resource = Resource.getDefault()
+                .merge(Resource.create(Attributes.of(AttributeKey.stringKey("service.name"), serviceName)));
 
-		final SpanExporter exporter = getOltpExporter();
+        final SpanExporter exporter = getOltpExporter();
 
-		SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-				.addSpanProcessor(BatchSpanProcessor.builder(exporter).build()).setResource(resource).build();
+        SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+                .addSpanProcessor(BatchSpanProcessor.builder(exporter).build()).setResource(resource).build();
 
-		OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider)
-				.setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-				.buildAndRegisterGlobal();
-		return openTelemetry;
-	}
+        OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider)
+                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+                .buildAndRegisterGlobal();
+        return openTelemetry;
+    }
 
-	private static ZipkinSpanExporter getZipkinExporter() {
-		final String endpoint = "http://192.168.1.120:9411/api/v2/spans";
-		return ZipkinSpanExporter.builder().setEndpoint(endpoint).build();
-	}
+    private static ZipkinSpanExporter getZipkinExporter() {
+        final String endpoint = "http://192.168.1.120:9411/api/v2/spans";
+        return ZipkinSpanExporter.builder().setEndpoint(endpoint).build();
+    }
 
-	private static OtlpGrpcSpanExporter getOltpExporter() {
-		String url = "http://192.168.1.120:4317";
-		return OtlpGrpcSpanExporter.builder().setEndpoint(url).setTimeout(2, TimeUnit.SECONDS).build();
-	}
+    private static OtlpGrpcSpanExporter getOltpExporter() {
+        // jaeger implement otlp for http://192.168.1.120:16686/search
+        String url = "http://192.168.1.120:4317";
+        return OtlpGrpcSpanExporter.builder().setEndpoint(url).setTimeout(2, TimeUnit.SECONDS).build();
+    }
 
 }

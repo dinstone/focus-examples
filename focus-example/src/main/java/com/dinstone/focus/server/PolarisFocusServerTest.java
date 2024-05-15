@@ -36,12 +36,12 @@ public class PolarisFocusServerTest {
         }
 
 //        final String pa = "119.91.66.223:8091";// "192.168.1.120:8091";
-        RateLimitInterceptor rateLimt = new RateLimitInterceptor();
+        RateLimitInterceptor rateLimit = new RateLimitInterceptor();
         ServerOptions serverOptions = new ServerOptions("focus.demo.server");
         serverOptions.setResolverOptions(new PolarisResolverOptions());
 
         serverOptions.listen("-", port).setAcceptOptions(new PhotonAcceptOptions());
-        serverOptions.addInterceptor(rateLimt);
+        serverOptions.addInterceptor(rateLimit);
 
         FocusServer server = new FocusServer(serverOptions);
         server.exporting(DemoService.class, new DemoServiceImpl());
@@ -54,7 +54,7 @@ public class PolarisFocusServerTest {
         }
 
         server.close();
-        rateLimt.close();
+        rateLimit.close();
         LOG.info("server stop");
     }
 

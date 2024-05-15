@@ -17,6 +17,7 @@ package com.dinstone.focus.server;
 
 import java.io.IOException;
 
+import com.dinstone.focus.TelemetryHelper;
 import com.dinstone.focus.example.UserCheckService;
 import com.dinstone.focus.example.UserCheckServiceImpl;
 import com.dinstone.focus.invoke.Interceptor;
@@ -59,7 +60,7 @@ public class UserServiceServer {
     private static FocusServer createUserServiceServer() {
 
         String serviceName = "user.service";
-        OpenTelemetry openTelemetry = getTelemetry(serviceName);
+        OpenTelemetry openTelemetry = TelemetryHelper.getTelemetry(serviceName);
         Interceptor tf = new TelemetryInterceptor(openTelemetry, Interceptor.Kind.SERVER);
 
         ServerOptions serverOptions = new ServerOptions(serviceName);
@@ -71,20 +72,6 @@ public class UserServiceServer {
                         .setSerializerType(ProtobufSerializer.SERIALIZER_TYPE));
 
         return server.start();
-    }
-
-    private static OpenTelemetry getTelemetry(String serviceName) {
-        Resource resource = Resource.getDefault()
-                .merge(Resource.create(Attributes.of(AttributeKey.stringKey("service.name"), serviceName)));
-
-        SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-                .addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().build()).build())
-                .setResource(resource).build();
-
-        OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider)
-                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-                .buildAndRegisterGlobal();
-        return openTelemetry;
     }
 
 }

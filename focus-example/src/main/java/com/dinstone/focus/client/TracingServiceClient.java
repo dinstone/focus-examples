@@ -17,6 +17,7 @@ package com.dinstone.focus.client;
 
 import java.util.Date;
 
+import com.dinstone.focus.TelemetryHelper;
 import com.dinstone.focus.example.OrderRequest;
 import com.dinstone.focus.example.OrderResponse;
 import com.dinstone.focus.example.OrderService;
@@ -24,7 +25,6 @@ import com.dinstone.focus.invoke.Interceptor;
 import com.dinstone.focus.telemetry.TelemetryInterceptor;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -36,17 +36,18 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
-public class OrderServiceClient {
+public class TracingServiceClient {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OrderServiceClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TracingServiceClient.class);
 
     public static void main(String[] args) {
 
         String appName = "order.client";
-        OpenTelemetry openTelemetry = getTelemetry(appName);
+        OpenTelemetry openTelemetry = TelemetryHelper.getTelemetry(appName);
         Interceptor tf = new TelemetryInterceptor(openTelemetry, Interceptor.Kind.CLIENT);
 
-        ClientOptions clientOptions = new ClientOptions(appName).connect("localhost", 3303).addInterceptor(tf);
+        ClientOptions clientOptions = new ClientOptions(appName).connect("localhost", 3303);
+        clientOptions.addInterceptor(tf);
         FocusClient client = new FocusClient(clientOptions);
 
         OrderService oc = client.importing(OrderService.class);
@@ -67,20 +68,6 @@ public class OrderServiceClient {
             client.close();
         }
 
-    }
-
-    private static OpenTelemetry getTelemetry(String serviceName) {
-        Resource resource = Resource.getDefault()
-                .merge(Resource.create(Attributes.of(AttributeKey.stringKey("service.name"), serviceName)));
-
-        SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-                .addSpanProcessor(BatchSpanProcessor.builder(ZipkinSpanExporter.builder().build()).build())
-                .setResource(resource).build();
-
-        OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider)
-                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-                .buildAndRegisterGlobal();
-        return openTelemetry;
     }
 
 }

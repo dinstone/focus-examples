@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.dinstone.focus.TelemetryHelper;
 import com.dinstone.focus.example.AuthenCheck;
 import com.dinstone.focus.example.DemoService;
 import com.dinstone.focus.example.OrderRequest;
@@ -34,7 +35,6 @@ import com.dinstone.focus.serialze.protostuff.ProtostuffSerializer;
 import com.dinstone.focus.telemetry.TelemetryInterceptor;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -50,35 +50,36 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 public class FocusClientTest {
 
-	private static final Logger LOG = LoggerFactory.getLogger(FocusClientTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FocusClientTest.class);
 
-	public static void main(String[] args) throws Exception {
-		LOG.info("init start");
+    public static void main(String[] args) throws Exception {
+        LOG.info("init start");
 
-		final String appName = "focus.example.client";
+        final String appName = "focus.example.client";
 
-		OpenTelemetry openTelemetry = getTelemetry(appName);
+        OpenTelemetry openTelemetry = TelemetryHelper.getTelemetry(appName);
 
-		Interceptor tf = new TelemetryInterceptor(openTelemetry, Interceptor.Kind.CLIENT);
+        Interceptor tf = new TelemetryInterceptor(openTelemetry, Interceptor.Kind.CLIENT);
 
-		ClientOptions option = new ClientOptions(appName).connect("localhost", 3333);//.addInterceptor(tf);
-		// option.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE);
+        ClientOptions option = new ClientOptions(appName).connect("localhost", 3333);
+        option.addInterceptor(tf);
+        // option.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE);
 
-		FocusClient client = new FocusClient(option);
+        FocusClient client = new FocusClient(option);
 
-		LOG.info("init end");
+        LOG.info("init end");
 
-		try {
-			UserService us = client.importing(UserService.class);
-			Page<User> ps = us.listUser(1);
-			System.out.println(ps);
+        try {
+            UserService us = client.importing(UserService.class);
+            Page<User> ps = us.listUser(1);
+            System.out.println(ps);
 
-			User u = us.getUser(10);
-			System.out.println(u);
+            User u = us.getUser(10);
+            System.out.println(u);
 
-			AuthenCheck ac = client.importing(AuthenCheck.class,
-					new ImportOptions("AuthenService").setTimeoutMillis(20000));
-			asyncError(ac);
+            AuthenCheck ac = client.importing(AuthenCheck.class,
+                    new ImportOptions("AuthenService").setTimeoutMillis(20000));
+            asyncError(ac);
 
 //			asyncExecute(ac, "AuthenCheck async hot: ");
 //			asyncExecute(ac, "AuthenCheck async exe: ");
@@ -89,136 +90,111 @@ public class FocusClientTest {
 //			execute(ds, "DemoService sync hot: ");
 //			execute(ds, "DemoService sync exe: ");
 
-			OrderService oc = client.importing(OrderService.class, new ImportOptions(OrderService.class.getName())
-					.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE));
-			executeOrderService(oc, "OrderService sync hot [Protobuf]: ");
-			executeOrderService(oc, "OrderService sync exe [Protobuf]: ");
+            OrderService oc = client.importing(OrderService.class, new ImportOptions(OrderService.class.getName())
+                    .setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE));
+            executeOrderService(oc, "OrderService sync hot [Protobuf]: ");
+            executeOrderService(oc, "OrderService sync exe [Protobuf]: ");
 //
-			oc = client.importing(OrderService.class,
-					new ImportOptions("OrderService").setSerializerType(JacksonSerializer.SERIALIZER_TYPE));
-			executeOrderService(oc, "OrderService sync hot [Json]: ");
-			executeOrderService(oc, "OrderService sync exe [Json]: ");
-		} finally {
-			client.close();
-		}
+            oc = client.importing(OrderService.class,
+                    new ImportOptions("OrderService").setSerializerType(JacksonSerializer.SERIALIZER_TYPE));
+            executeOrderService(oc, "OrderService sync hot [Json]: ");
+            executeOrderService(oc, "OrderService sync exe [Json]: ");
+        } finally {
+            client.close();
+        }
 
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-		}
-	}
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+        }
+    }
 
-	private static OpenTelemetry getTelemetry(String serviceName) {
-		Resource resource = Resource.getDefault()
-				.merge(Resource.create(Attributes.of(AttributeKey.stringKey("service.name"), serviceName)));
+    private static void executeOrderService(OrderService oc, String tag) {
+        int c = 0;
+        long st = System.currentTimeMillis();
+        int loopCount = 100000;
+        while (c < loopCount) {
+            OrderRequest or = new OrderRequest();
+            or.setUid("u-" + c);
+            or.setPoi("p-" + c);
+            or.setSn("s-" + c);
+            oc.findOldOrder(or);
+            c++;
+        }
+        long et = System.currentTimeMillis() - st;
+        System.out.println(tag + et + " ms, " + (loopCount * 1000 / et) + " tps");
+    }
 
-		final SpanExporter exporter = getOltpExporter();
+    private static void asyncExecute(AuthenCheck ac, String tag) throws InterruptedException {
+        int c = 0;
+        long st = System.currentTimeMillis();
+        int loopCount = 10000;
+        AtomicInteger ok = new AtomicInteger();
+        AtomicInteger ng = new AtomicInteger();
+        CountDownLatch cdl = new CountDownLatch(loopCount);
+        while (c < loopCount) {
+            ac.token("dinstoneo").whenComplete((r, e) -> {
+                if (e == null) {
+                    ok.incrementAndGet();
+                } else {
+                    ng.incrementAndGet();
+                }
+                cdl.countDown();
+            });
+            c++;
+        }
+        cdl.await();
+        long et = System.currentTimeMillis() - st;
+        System.out.println(
+                tag + et + " ms, ok=" + ok.get() + ",ng=" + ng.get() + ", " + (loopCount * 1000 / et) + " tps");
+    }
 
-		SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-				.addSpanProcessor(BatchSpanProcessor.builder(exporter).build()).setResource(resource).build();
+    private static void syncError(final DemoService ds) {
+        try {
+            System.out.println("====================");
+            ds.hello("");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-		OpenTelemetry openTelemetry = OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider)
-				.setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-				.buildAndRegisterGlobal();
-		return openTelemetry;
-	}
+    private static void asyncError(AuthenCheck ac) {
+        try {
+            Future<Boolean> check2 = ac.check("dinstone");
+            CompletableFuture<String> future = ac.token("dinstone");
+            Future<Boolean> check1 = ac.check(null);
+            System.out.println("token 1 is " + future.get());
+            System.out.println("check 2 is " + check2.get());
+            System.out.println("check 1 is " + check1.get());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-	private static ZipkinSpanExporter getZipkinExporter() {
-		final String endpoint = "http://192.168.1.120:9411/api/v2/spans";
-		return ZipkinSpanExporter.builder().setEndpoint(endpoint).build();
-	}
+    private static void conparal(final DemoService ds) {
+        for (int i = 1; i < 3; i++) {
+            final int index = i;
+            Thread t = new Thread() {
+                @Override
+                public void run() {
+                    execute(ds, "client-" + index + ": ");
+                }
+            };
+            t.setName("rpc-client-" + i);
+            t.start();
+        }
+    }
 
-	private static OtlpGrpcSpanExporter getOltpExporter() {
-		String url = "http://192.168.1.120:4317";
-		return OtlpGrpcSpanExporter.builder().setEndpoint(url).setTimeout(2, TimeUnit.SECONDS).build();
-	}
-
-	private static void executeOrderService(OrderService oc, String tag) {
-		int c = 0;
-		long st = System.currentTimeMillis();
-		int loopCount = 100000;
-		while (c < loopCount) {
-			OrderRequest or = new OrderRequest();
-			or.setUid("u-" + c);
-			or.setPoi("p-" + c);
-			or.setSn("s-" + c);
-			oc.findOldOrder(or);
-			c++;
-		}
-		long et = System.currentTimeMillis() - st;
-		System.out.println(tag + et + " ms, " + (loopCount * 1000 / et) + " tps");
-	}
-
-	private static void asyncExecute(AuthenCheck ac, String tag) throws InterruptedException {
-		int c = 0;
-		long st = System.currentTimeMillis();
-		int loopCount = 10000;
-		AtomicInteger ok = new AtomicInteger();
-		AtomicInteger ng = new AtomicInteger();
-		CountDownLatch cdl = new CountDownLatch(loopCount);
-		while (c < loopCount) {
-			ac.token("dinstoneo").whenComplete((r, e) -> {
-				if (e == null) {
-					ok.incrementAndGet();
-				} else {
-					ng.incrementAndGet();
-				}
-				cdl.countDown();
-			});
-			c++;
-		}
-		cdl.await();
-		long et = System.currentTimeMillis() - st;
-		System.out.println(
-				tag + et + " ms, ok=" + ok.get() + ",ng=" + ng.get() + ", " + (loopCount * 1000 / et) + " tps");
-	}
-
-	private static void syncError(final DemoService ds) {
-		try {
-			System.out.println("====================");
-			ds.hello("");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private static void asyncError(AuthenCheck ac) {
-		try {
-			Future<Boolean> check2 = ac.check("dinstone");
-			CompletableFuture<String> future = ac.token("dinstone");
-			Future<Boolean> check1 = ac.check(null);
-			System.out.println("token 1 is " + future.get());
-			System.out.println("check 2 is " + check2.get());
-			System.out.println("check 1 is " + check1.get());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private static void conparal(final DemoService ds) {
-		for (int i = 1; i < 3; i++) {
-			final int index = i;
-			Thread t = new Thread() {
-				@Override
-				public void run() {
-					execute(ds, "client-" + index + ": ");
-				}
-			};
-			t.setName("rpc-client-" + i);
-			t.start();
-		}
-	}
-
-	private static void execute(DemoService ds, String tag) {
-		int c = 0;
-		long st = System.currentTimeMillis();
-		int loopCount = 10;
-		while (c < loopCount) {
-			ds.hello("dinstoneo");
-			c++;
-		}
-		long et = System.currentTimeMillis() - st;
-		System.out.println(tag + et + " ms, " + (loopCount * 1000 / et) + " tps");
-	}
+    private static void execute(DemoService ds, String tag) {
+        int c = 0;
+        long st = System.currentTimeMillis();
+        int loopCount = 10;
+        while (c < loopCount) {
+            ds.hello("dinstoneo");
+            c++;
+        }
+        long et = System.currentTimeMillis() - st;
+        System.out.println(tag + et + " ms, " + (loopCount * 1000 / et) + " tps");
+    }
 
 }
