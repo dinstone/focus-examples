@@ -21,20 +21,13 @@ import com.dinstone.focus.TelemetryHelper;
 import com.dinstone.focus.example.OrderRequest;
 import com.dinstone.focus.example.OrderResponse;
 import com.dinstone.focus.example.OrderService;
+import com.dinstone.focus.invoke.Context;
 import com.dinstone.focus.invoke.Interceptor;
+import com.dinstone.focus.propagate.Baggage;
 import com.dinstone.focus.telemetry.TelemetryInterceptor;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
 public class TracingServiceClient {
 
@@ -58,7 +51,11 @@ public class TracingServiceClient {
         order.setSn("MDHEWED");
         order.setUid("dinstone");
 
-        try {
+        try (Context context = Context.create()) {
+            Baggage baggage = new Baggage();
+            baggage.put("swimlane", "gray");
+            context.put(Baggage.ContextKey, baggage);
+
             OrderResponse o = oc.createOrder(order);
             LOG.info("order id = {}", o.getOid());
             Thread.sleep(3000);

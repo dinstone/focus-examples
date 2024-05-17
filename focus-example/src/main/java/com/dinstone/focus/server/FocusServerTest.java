@@ -32,6 +32,7 @@ import com.dinstone.focus.serialze.json.JacksonSerializer;
 import com.dinstone.focus.serialze.protobuf.ProtobufSerializer;
 import com.dinstone.focus.serialze.protostuff.ProtostuffSerializer;
 import com.dinstone.focus.telemetry.TelemetryInterceptor;
+import com.dinstone.focus.transport.photon.PhotonAcceptOptions;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
 import io.opentelemetry.api.OpenTelemetry;
@@ -59,6 +60,12 @@ public class FocusServerTest {
 
         ServerOptions serverOptions = new ServerOptions(appName).listen("localhost", 3333);
         serverOptions.addInterceptor(tf);
+
+        PhotonAcceptOptions acceptOptions = new PhotonAcceptOptions();
+        acceptOptions.setBusinessSize(4);
+        acceptOptions.setWorkerSize(2);
+
+        serverOptions.setAcceptOptions(acceptOptions);
         // serverOptions.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE);
 
         FocusServer server = new FocusServer(serverOptions);

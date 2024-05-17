@@ -15,6 +15,8 @@
  */
 package com.dinstone.focus.example;
 
+import com.dinstone.focus.invoke.Context;
+import com.dinstone.focus.propagate.Baggage;
 import com.dinstone.focus.protobuf.UserCheckRequest;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
@@ -40,6 +42,9 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("user id is valid");
         }
         log.info("user is exist:{}", order.getUid());
+
+        Baggage baggage = Context.current().get(Baggage.ContextKey);
+        log.info("baggage = {}", baggage);
 
         storeService.checkExist(order.getUid());
         return new OrderResponse().setOid(order.getUid() + "-" + order.getPoi() + "-" + order.getSn());

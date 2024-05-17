@@ -33,6 +33,7 @@ import com.dinstone.focus.invoke.Interceptor;
 import com.dinstone.focus.serialze.json.JacksonSerializer;
 import com.dinstone.focus.serialze.protostuff.ProtostuffSerializer;
 import com.dinstone.focus.telemetry.TelemetryInterceptor;
+import com.dinstone.focus.transport.photon.PhotonConnectOptions;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
 import io.opentelemetry.api.OpenTelemetry;
@@ -61,7 +62,9 @@ public class FocusClientTest {
 
         Interceptor tf = new TelemetryInterceptor(openTelemetry, Interceptor.Kind.CLIENT);
 
-        ClientOptions option = new ClientOptions(appName).connect("localhost", 3333);
+        ClientOptions option = new ClientOptions(appName);
+        option.connect("localhost", 3333);
+        option.setConnectOptions(new PhotonConnectOptions().setConnectPoolSize(3));
         option.addInterceptor(tf);
         // option.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE);
 
