@@ -18,7 +18,6 @@ package com.dinstone.focus.client;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.dinstone.focus.TelemetryHelper;
@@ -37,17 +36,6 @@ import com.dinstone.focus.transport.photon.PhotonConnectOptions;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 public class FocusClientTest {
 
@@ -64,9 +52,12 @@ public class FocusClientTest {
 
         ClientOptions option = new ClientOptions(appName);
         option.connect("localhost", 3333);
+//        option.connect("localhost", 3344);
+//        option.connect("localhost", 3355);
         option.setConnectOptions(new PhotonConnectOptions().setConnectPoolSize(3));
         option.addInterceptor(tf);
-        // option.setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE);
+        option.setConnectRetry(2);
+        option.setTimeoutRetry(2);
 
         FocusClient client = new FocusClient(option);
 
@@ -82,14 +73,14 @@ public class FocusClientTest {
 
             AuthenCheck ac = client.importing(AuthenCheck.class,
                     new ImportOptions("AuthenService").setTimeoutMillis(20000));
-            asyncError(ac);
+//            asyncError(ac);
 
-//			asyncExecute(ac, "AuthenCheck async hot: ");
-//			asyncExecute(ac, "AuthenCheck async exe: ");
+            asyncExecute(ac, "AuthenCheck async hot: ");
+            asyncExecute(ac, "AuthenCheck async exe: ");
 //
-//			DemoService ds = client.importing(DemoService.class);
+            DemoService ds = client.importing(DemoService.class);
 //			syncError(ds);
-//			conparal(ds);
+            parallel(ds);
 //			execute(ds, "DemoService sync hot: ");
 //			execute(ds, "DemoService sync exe: ");
 
@@ -97,7 +88,7 @@ public class FocusClientTest {
                     .setSerializerType(ProtostuffSerializer.SERIALIZER_TYPE));
             executeOrderService(oc, "OrderService sync hot [Protobuf]: ");
             executeOrderService(oc, "OrderService sync exe [Protobuf]: ");
-//
+
             oc = client.importing(OrderService.class,
                     new ImportOptions("OrderService").setSerializerType(JacksonSerializer.SERIALIZER_TYPE));
             executeOrderService(oc, "OrderService sync hot [Json]: ");
@@ -174,24 +165,32 @@ public class FocusClientTest {
         }
     }
 
-    private static void conparal(final DemoService ds) {
-        for (int i = 1; i < 3; i++) {
+    private static void parallel(final DemoService ds) throws InterruptedException {
+        int parallelCount = 6;
+        int loopCount = 10000;
+        CountDownLatch downLatch = new CountDownLatch(parallelCount);
+        long st = System.currentTimeMillis();
+        for (int i = 1; i <= parallelCount; i++) {
             final int index = i;
             Thread t = new Thread() {
                 @Override
                 public void run() {
-                    execute(ds, "client-" + index + ": ");
+                    execute(ds, loopCount, "DemoService client-" + index + " sync exe: ");
+                    downLatch.countDown();
                 }
             };
             t.setName("rpc-client-" + i);
             t.start();
         }
+        downLatch.await();
+        long et = System.currentTimeMillis() - st;
+        int total = parallelCount * loopCount;
+        System.out.println("DemoService parallel " + et + " ms, " + (total * 1000 / et) + " tps");
     }
 
-    private static void execute(DemoService ds, String tag) {
+    private static void execute(DemoService ds, int loopCount, String tag) {
         int c = 0;
         long st = System.currentTimeMillis();
-        int loopCount = 10;
         while (c < loopCount) {
             ds.hello("dinstoneo");
             c++;

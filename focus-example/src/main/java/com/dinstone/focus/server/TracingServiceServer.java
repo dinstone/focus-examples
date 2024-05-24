@@ -31,15 +31,6 @@ import com.dinstone.focus.transport.photon.PhotonConnectOptions;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
 public class TracingServiceServer {
 
@@ -83,7 +74,7 @@ public class TracingServiceServer {
         Interceptor tf = new TelemetryInterceptor(openTelemetry, Interceptor.Kind.CLIENT);
 
         ClientOptions option = new ClientOptions(appName).connect("localhost", 3302)
-                .setConnectOptions(new PhotonConnectOptions()).addInterceptor(tf);
+                .setConnectOptions(new PhotonConnectOptions()).addInterceptor(tf).setConnectRetry(2);
         FocusClient client = new FocusClient(option);
         return client.importing(StoreService.class);
     }
@@ -92,7 +83,7 @@ public class TracingServiceServer {
         Interceptor tf = new TelemetryInterceptor(openTelemetry, Interceptor.Kind.CLIENT);
 
         ClientOptions option = new ClientOptions(appName).connect("localhost", 3301)
-                .setConnectOptions(new PhotonConnectOptions()).addInterceptor(tf);
+                .setConnectOptions(new PhotonConnectOptions()).addInterceptor(tf).setConnectRetry(2);
         FocusClient client = new FocusClient(option);
 
         ImportOptions ro = new ImportOptions(UserCheckService.class.getName())

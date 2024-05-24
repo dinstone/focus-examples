@@ -38,6 +38,7 @@ public class TelemetryHelper {
     }
 
     private static OtlpGrpcSpanExporter getOltpExporter() {
+        // jaeger implement, UI: http://192.168.1.120:16686/
         String url = "http://192.168.1.120:4317";
         return OtlpGrpcSpanExporter.builder().setEndpoint(url).setTimeout(2, TimeUnit.SECONDS).build();
     }

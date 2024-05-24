@@ -21,7 +21,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.dinstone.focus.client.FocusClientTest;
+import com.dinstone.loghub.Logger;
+import com.dinstone.loghub.LoggerFactory;
+
 public class UserServiceServerImpl implements UserService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FocusClientTest.class);
 
     @Override
     public boolean existUser(String email) {
@@ -62,6 +68,9 @@ public class UserServiceServerImpl implements UserService {
 
     @Override
     public Page<User> listUser(int pageNo) {
+
+        LOG.info("pageNo = {}", pageNo);
+
         List<User> userList = new ArrayList<>(15);
 
         for (int i = 0; i < 15; i++) {

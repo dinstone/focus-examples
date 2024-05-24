@@ -58,7 +58,13 @@ public class FocusServerTest {
         OpenTelemetry openTelemetry = getTelemetry(appName);
         Interceptor tf = new TelemetryInterceptor(openTelemetry, Interceptor.Kind.SERVER);
 
-        ServerOptions serverOptions = new ServerOptions(appName).listen("localhost", 3333);
+        int port = 3333;
+        String portParm = System.getProperty("port");
+        if (portParm != null) {
+            port = Integer.parseInt(portParm);
+        }
+
+        ServerOptions serverOptions = new ServerOptions(appName).listen("localhost", port);
         serverOptions.addInterceptor(tf);
 
         PhotonAcceptOptions acceptOptions = new PhotonAcceptOptions();
