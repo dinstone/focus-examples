@@ -19,7 +19,7 @@ import com.dinstone.focus.example.UserCheckService;
 import com.dinstone.focus.invoke.Interceptor;
 import com.dinstone.focus.protobuf.UserCheckRequest;
 import com.dinstone.focus.protobuf.UserCheckResponse;
-import com.dinstone.focus.serialze.protobuf.ProtobufSerializer;
+import com.dinstone.focus.serialize.protobuf.ProtobufSerializer;
 import com.dinstone.focus.telemetry.TelemetryInterceptor;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;

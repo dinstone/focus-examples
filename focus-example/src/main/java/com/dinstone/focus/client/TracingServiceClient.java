@@ -54,7 +54,7 @@ public class TracingServiceClient {
         try (Context context = Context.create()) {
             Baggage baggage = new Baggage();
             baggage.put("swimlane", "gray");
-            context.put(Baggage.ContextKey, baggage);
+            context.put(Baggage.CONTEXT_KEY, baggage);
 
             OrderResponse o = oc.createOrder(order);
             LOG.info("order id = {}", o.getOid());

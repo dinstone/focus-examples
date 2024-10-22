@@ -18,7 +18,7 @@ package com.dinstone.focus.client;
 import com.dinstone.focus.example.Account;
 import com.dinstone.focus.example.AuthenCheck;
 import com.dinstone.focus.invoke.Interceptor.Kind;
-import com.dinstone.focus.serialze.protostuff.ProtostuffSerializer;
+import com.dinstone.focus.serialize.protostuff.ProtostuffSerializer;
 import com.dinstone.focus.telemetry.TelemetryInterceptor;
 import com.dinstone.focus.transport.photon.PhotonConnectOptions;
 import com.dinstone.loghub.Logger;

@@ -26,9 +26,9 @@ import com.dinstone.focus.example.OrderService;
 import com.dinstone.focus.example.OrderServiceImpl;
 import com.dinstone.focus.example.UserService;
 import com.dinstone.focus.example.UserServiceServerImpl;
-import com.dinstone.focus.serialze.json.JacksonSerializer;
-import com.dinstone.focus.serialze.protobuf.ProtobufSerializer;
-import com.dinstone.focus.serialze.protostuff.ProtostuffSerializer;
+import com.dinstone.focus.serialize.json.JacksonSerializer;
+import com.dinstone.focus.serialize.protobuf.ProtobufSerializer;
+import com.dinstone.focus.serialize.protostuff.ProtostuffSerializer;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
 

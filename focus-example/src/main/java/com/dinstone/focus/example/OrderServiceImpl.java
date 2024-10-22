@@ -43,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
         }
         log.info("user is exist:{}", order.getUid());
 
-        Baggage baggage = Context.current().get(Baggage.ContextKey);
+        Baggage baggage = Context.current().get(Baggage.CONTEXT_KEY);
         log.info("baggage = {}", baggage);
 
         storeService.checkExist(order.getUid());

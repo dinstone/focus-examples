@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import com.dinstone.focus.example.ArithService;
 import com.dinstone.focus.protobuf.ArithRequest;
 import com.dinstone.focus.protobuf.ArithResponse;
-import com.dinstone.focus.serialze.protobuf.ProtobufSerializer;
+import com.dinstone.focus.serialize.protobuf.ProtobufSerializer;
 import com.dinstone.focus.transport.photon.PhotonConnectOptions;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
@@ -61,7 +61,7 @@ public class GoServiceClientTest {
         ArithRequest request = ArithRequest.newBuilder().setA(20).setB(34).build();
         ArithResponse response = as.Add(request);
 
-        System.out.println(response.getC());
+        LOG.info("ArithService protobuf result =  " + response.getC());
     }
 
     @SuppressWarnings("rawtypes")
@@ -79,7 +79,9 @@ public class GoServiceClientTest {
 
         parameter.put("A", 20);
         parameter.put("B", 5);
-        gs.sync("Div", parameter);
+        HashMap<String, Object> res = gs.sync("Div", parameter);
+
+        LOG.info("sync div result =  " + res);
     }
 
 }

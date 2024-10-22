@@ -25,7 +25,7 @@ import com.dinstone.focus.example.StoreService;
 import com.dinstone.focus.example.StoreServiceImpl;
 import com.dinstone.focus.example.UserCheckService;
 import com.dinstone.focus.invoke.Interceptor;
-import com.dinstone.focus.serialze.protobuf.ProtobufSerializer;
+import com.dinstone.focus.serialize.protobuf.ProtobufSerializer;
 import com.dinstone.focus.telemetry.TelemetryInterceptor;
 import com.dinstone.focus.transport.photon.PhotonAcceptOptions;
 import com.dinstone.focus.transport.photon.PhotonConnectOptions;
@@ -73,8 +73,8 @@ public class StoreServiceServer {
         FocusServer server = new FocusServer(serverOptions);
         UserCheckService userService = createUserServiceRpc(openTelemetry);
         server.exporting(StoreService.class, new StoreServiceImpl(userService));
-
-        return server.start();
+        server.start();
+        return server;
     }
 
     private static UserCheckService createUserServiceRpc(OpenTelemetry openTelemetry) {

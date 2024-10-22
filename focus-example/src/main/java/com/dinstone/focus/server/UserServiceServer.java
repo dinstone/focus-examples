@@ -21,22 +21,12 @@ import com.dinstone.focus.TelemetryHelper;
 import com.dinstone.focus.example.UserCheckService;
 import com.dinstone.focus.example.UserCheckServiceImpl;
 import com.dinstone.focus.invoke.Interceptor;
-import com.dinstone.focus.serialze.protobuf.ProtobufSerializer;
+import com.dinstone.focus.serialize.protobuf.ProtobufSerializer;
 import com.dinstone.focus.telemetry.TelemetryInterceptor;
 import com.dinstone.focus.transport.photon.PhotonAcceptOptions;
 import com.dinstone.loghub.Logger;
 import com.dinstone.loghub.LoggerFactory;
-
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
 public class UserServiceServer {
 
@@ -71,7 +61,8 @@ public class UserServiceServer {
                 new ExportOptions(UserCheckService.class.getName())
                         .setSerializerType(ProtobufSerializer.SERIALIZER_TYPE));
 
-        return server.start();
+        server.start();
+        return server;
     }
 
 }

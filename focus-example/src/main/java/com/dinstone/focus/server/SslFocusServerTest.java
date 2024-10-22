@@ -21,7 +21,7 @@ import java.security.cert.X509Certificate;
 
 import com.dinstone.focus.example.AuthenService;
 import com.dinstone.focus.invoke.Interceptor.Kind;
-import com.dinstone.focus.serialze.protostuff.ProtostuffSerializer;
+import com.dinstone.focus.serialize.protostuff.ProtostuffSerializer;
 import com.dinstone.focus.telemetry.TelemetryInterceptor;
 import com.dinstone.focus.transport.photon.PhotonAcceptOptions;
 
